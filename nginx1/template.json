@@ -81,7 +81,7 @@
               }
             },
             {
-              "name": "RUBY",
+              "name": "Lab",
               "properties": {
                 "priority": 102,
                 "protocol": "TCP",
@@ -228,8 +228,8 @@
                 "typeHandlerVersion": "2.0",
                 "autoUpgradeMinorVersion": true,
                 "settings": {
-                  "fileUris": ["https://raw.githubusercontent.com/azureossd/general-scripts/master/Linux/install_ruby_specific_version_rbenv.sh"],
-                  "commandToExecute": "[concat('sudo sh install_ruby_specific_version_rbenv.sh ',variables('adminUsername'))]"
+                  "fileUris": ["https://raw.githubusercontent.com/Kendubu1/samples/main/nginx1/nginxlab.sh"],
+                  "commandToExecute": "[concat('sudo sh nginxlab.sh ',variables('adminUsername'))]"
                 }
               }
       }
