@@ -1,0 +1,4 @@
+nodeProcessCountPerApplication: 1
+maxConcurrentRequestsPerProcess: 3
+maxNamedPipeConnectionRetry: 5
+namedPipeConnectionRetryDelay: 25
