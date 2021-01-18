@@ -1,4 +1,5 @@
-nodeProcessCountPerApplication: 1
+nodeProcessCountPerApplication: 6
 maxConcurrentRequestsPerProcess: 3
 maxNamedPipeConnectionRetry: 5
 namedPipeConnectionRetryDelay: 25
+loggingEnabled: true
