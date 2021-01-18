@@ -229,7 +229,7 @@
                 "autoUpgradeMinorVersion": true,
                 "settings": {
                   "fileUris": ["https://raw.githubusercontent.com/Kendubu1/samples/main/nginx1/nginxlab1.sh"],
-                  "commandToExecute": "[concat('sudo sh nginxlab.sh ',variables('adminUsername'))]"
+                  "commandToExecute": "[concat('sudo sh nginxlab1.sh ',variables('adminUsername'))]"
                 }
               }
       }
