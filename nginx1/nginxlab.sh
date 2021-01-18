@@ -33,7 +33,7 @@ export PUBLIC_IP=$(curl -s http://checkip.amazonaws.com || printf "0.0.0.0")
 echo "Stopping any running instances of NGINX"
 sudo sed -i "s/worker_processes.*;/worker_processes 1;/" /etc/nginx/nginx.conf
 sudo sed -i "s/worker_connections.*;/worker_connections 3;/" /etc/nginx/nginx.conf
-sudo sh -c "printf '%s\n' '' \
+printf '%s\n' '' \
     'server {' \
     '    listen 80;' \
     '    listen [::]:80;' \
@@ -42,7 +42,7 @@ sudo sh -c "printf '%s\n' '' \
     '    proxy_pass http://localhost:3000/;' \
     '     }' \
     '     }' \  
-    '' > test.txt" exit
+    '' > /etc/nginx/conf.d/node.conf
 sudo nginx -s reload
 
 #Configure & Start Node Service
