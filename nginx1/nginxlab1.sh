@@ -30,36 +30,38 @@ sudo npm install
 
 # Configure Nginx 
 export PUBLIC_IP=$(curl -s http://checkip.amazonaws.com || printf "0.0.0.0")
-echo "Stopping any running instances of NGINX"
 sudo sed -i "s/worker_processes.*;/worker_processes 1;/" /etc/nginx/nginx.conf
 sudo sed -i "s/worker_connections.*;/worker_connections 3;/" /etc/nginx/nginx.conf
-printf '%s\n' '' \
+sudo sh -c "printf '%s\n' '' \
     'server {' \
     '    listen 80;' \
     '    listen [::]:80;' \
-    '    server_name ${PUBLIC_IP};' \
+    '    server_name "$PUBLIC_IP";' \
     'location / {' \
     '    proxy_pass http://localhost:3000/;' \
     '     }' \
-    '     }' \  
-    '' > /etc/nginx/conf.d/node.conf
+    '     }' \
+    '' > /etc/nginx/conf.d/node.conf"
 sudo nginx -s reload
 
 #Configure & Start Node Service
-sudo printf '%s\n' '#!bin/bash' 'pm2 start /opt/app/src/index.js' > /opt/app/node.sh
+#sudo printf '%s\n' '#!bin/bash' 'pm2 start /opt/app/src/index.js' > /opt/app/node.sh
+sudo printf '%s\n' '#!bin/bash' 'cd /opt/app' 'npm start' > /opt/app/node.sh
 sudo chmod +x /opt/app/node.sh
 sudo printf '%s\n' '' \
     '[Unit]' \
-    'Description=node pm2 start script' \
+    'Description=node start script' \
     ''\
     '[Service]' \
     'ExecStart=/opt/app/node.sh' \
+    'StandardOutput=syslog'\
+    'StandardError=syslog'\
     ''\
     '[Install]' \
     'WantedBy=multi-user.target' \
-    '' > /etc/systemd/nodepm2.service
+    '' > /etc/systemd/nodeapp.service
 
-cp /etc/systemd/nodepm2.service /lib/systemd/system
-sudo systemctl enable nodepm2.service
-sudo systemctl start nodepm2
+cp /etc/systemd/nodeapp.service /lib/systemd/system
+sudo systemctl enable nodeapp.service
+sudo systemctl start nodeapp
 
