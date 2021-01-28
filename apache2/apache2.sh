@@ -22,9 +22,10 @@ sleep 15
 sudo ufw allow in "Apache Full"
 
 #Update permissions & install app
+sudo rm -rf /var/www/html/
+sudo mkdir /var/www/html/
+cd /var/www/html/ && sudo git clone https://github.com/Kendubu1/commtest.git .
 sudo chmod -R 0755 /var/www/html/
-cd /var/www/html/
-sudo git clone https://github.com/Kendubu1/commtest.git .
 
 sleep 15
 
@@ -37,8 +38,28 @@ sudo mysql -uroot -ppassword authors < /opt/authors.sql
 
 sleep 15
 
-# Install PHP
+# Install PHP & Update Index
 sudo apt install php libapache2-mod-php php-mysql -y
 sudo sed -i "s/DirectoryIndex.*/DirectoryIndex index.php index.html/" /etc/apache2/mods-enabled/dir.conf
 
 #Update Update/disable Prefork
+sudo a2dismod php7.2
+sudo a2dismod mpm_prefork
+sudo a2dismod mpm_worker
+
+#note:have sed skip first occurrance 
+sudo sed -i "s/StartServers.*/StartServers 1/" /etc/apache2/mods-available/mpm_prefork.conf 
+sudo sed -i "s/MinSpareServers.*/MinSpareServers 1/" /etc/apache2/mods-available/mpm_prefork.conf
+sudo sed -i "s/MaxSpareServers.*/MaxSpareServers 1/" /etc/apache2/mods-available/mpm_prefork.conf
+sudo sed -i "s/MaxRequestWorkers.*/MaxRequestWorkers 1/" /etc/apache2/mods-available/mpm_prefork.conf
+sudo sed -i "s/MaxConnectionsPerChild.*/MaxConnectionsPerChild 1/" /etc/apache2/mods-available/mpm_prefork.conf
+
+sudo sed -i "s/StartServers.*/StartServers 1/" /etc/apache2/mods-available/mpm_worker.conf
+sudo sed -i "s/MinSpareThreads.*/MinSpareThreads 1/" /etc/apache2/mods-available/mpm_worker.conf
+sudo sed -i "s/MaxSpareThreads.*/MaxSpareThreads 1/" /etc/apache2/mods-available/mpm_worker.conf
+sudo sed -i "s/ThreadLimit.*/ThreadLimit 1/" /etc/apache2/mods-available/mpm_worker.conf
+sudo sed -i "s/ThreadsPerChild.*/ThreadsPerChild 1/" /etc/apache2/mods-available/mpm_worker.conf
+sudo sed -i "s/MaxRequestWorkers.*/MaxRequestWorkers 1/" /etc/apache2/mods-available/mpm_worker.conf
+sudo sed -i "s/MaxConnectionsPerChild.*/MaxConnectionsPerChild 1/" /etc/apache2/mods-available/mpm_worker.conf
+
+sudo systemctl restart apache
