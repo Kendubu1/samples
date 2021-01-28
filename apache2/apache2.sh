@@ -1,25 +1,25 @@
 #!bin/sh
 
-echo "#Startlogging"
+#Startlogging"
 exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
 exec 1>scriptlog.out 2>&1
 
-echo "#Install Apache"
+#Install Apache"
 sudo apt-get update
 
 sleep 15
 
 sudo apt-get -y install apache2
 
-echo "#Enable Apache"
+#Enable Apache"
 #sudo systemctl enable apache2
 #sudo systemctl start apache2
 
-echo "#Adjust Firewall"
+#Adjust Firewall"
 sudo ufw allow in "Apache Full"
 
-echo "#Update permissions & install app"
+#Update permissions & install app
 sudo chmod -R 0755 /var/www/html/
 cd /var/www/html/
 sudo git clone https://github.com/Kendubu1/commtest.git
