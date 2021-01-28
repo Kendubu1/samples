@@ -22,7 +22,7 @@ sudo ufw allow in "Apache Full"
 #Update permissions & install app
 sudo chmod -R 0755 /var/www/html/
 cd /var/www/html/
-sudo git clone https://github.com/Kendubu1/commtest.git
+sudo git clone https://github.com/Kendubu1/commtest.git .
 
 # Install PHP
 sudo apt install php libapache2-mod-php php-mysql -y
@@ -31,9 +31,10 @@ sudo sed -i "s/DirectoryIndex.*/DirectoryIndex index.php index.html/" /etc/apach
 #Update Prefork
 
 
+
 # Install MySQL & DB
 sudo apt install mysql-server -y
-sudo mysql SET PASSWORD FOR 'root'@'localhost' = PASSWORD('password'); FLUSH PRIVILEGES;
+sudo mysql ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;
 sudo mysql -uroot -ppassword -e "CREATE DATABASE authors;"
-wget -O /opt/authors.sql https://github.com/kendubu1/apache2/raw/main/authors.sql
+wget -O /opt/authors.sql https://raw.githubusercontent.com/Kendubu1/samples/main/apache2/authors.sql
 sudo mysql -uroot -ppassword authors < /opt/authors.sql
