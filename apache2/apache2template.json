@@ -1,0 +1,251 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "alias": {
+        "type": "string",
+        "defaultValue": "youralias",
+        "metadata": {
+          "description": "Type your alias, this will be the admin username for your Virtual Machine"
+        }
+      },
+      "vmName": {
+        "type": "string",
+        "defaultValue": "AzureOSSApacheVM2",
+        "metadata": {
+          "description": "The name of your Virtual Machine, this will be also updating the dns record"
+        }
+      },
+      "authenticationType": {
+        "type": "string",
+        "defaultValue": "password",
+        "allowedValues": [
+          "sshPublicKey",
+          "password"
+        ],
+        "metadata": {
+          "description": "Type of authentication to use on the Virtual Machine. SSH key is recommended."
+        }
+      },
+      "adminPasswordOrKey": {
+        "type": "securestring",
+        "metadata": {
+          "description": "SSH Key or password for the Virtual Machine. SSH key is recommended."
+        }
+      }
+    },
+    "variables": {
+      "adminUsername": "[toLower(parameters('alias'))]",
+      "linuxServerName": "[concat(parameters('alias'),'-',parameters('vmName'))]",
+      "linuxDNSNameForPublicIP": "[toLower(variables('linuxServerName'))]",
+      "publicIpAddressName": "[concat(variables('linuxServerName'), '-PublicIP' )]",
+      "networkInterfaceName": "[concat(variables('linuxServerName'),'-NIC')]",
+      "virtualNetworkName": "[concat(variables('linuxServerName'),'-VNET')]",
+      "subnetName":"DefaultSubnet",
+      "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+      "networkSecurityGroupName": "[concat(variables('linuxServerName'),'-NSG')]",
+      "osDiskType": "Standard_LRS",
+      "subnetAddressPrefix": "10.1.0.0/24",
+      "addressPrefix": "10.1.0.0/16",
+      "linuxConfiguration": {
+        "disablePasswordAuthentication": true,
+        "ssh": {
+          "publicKeys": [
+            {
+              "path": "[concat('/home/', variables('adminUsername'), '/.ssh/authorized_keys')]",
+              "keyData": "[parameters('adminPasswordOrKey')]"
+            }
+          ]
+        }
+      }
+    },
+    "resources": [
+      {
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "apiVersion": "2020-06-01",
+        "name": "[variables('networkSecurityGroupName')]",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "securityRules": [
+            {
+              "name": "SSH",
+              "properties": {
+                "priority": 101,
+                "protocol": "TCP",
+                "access": "Allow",
+                "direction": "Inbound",
+                "sourceAddressPrefix": "*",
+                "sourcePortRange": "*",
+                "destinationAddressPrefix": "*",
+                "destinationPortRange": "22"
+              }
+            },
+            {
+              "name": "Lab",
+              "properties": {
+                "priority": 102,
+                "protocol": "TCP",
+                "access": "Allow",
+                "direction": "Inbound",
+                "sourceAddressPrefix": "*",
+                "sourcePortRange": "*",
+                "destinationAddressPrefix": "*",
+                "destinationPortRange": "3000"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "Microsoft.Network/networkInterfaces",
+        "apiVersion": "2020-06-01",
+        "name": "[variables('networkInterfaceName')]",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]",
+          "[resourceId('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+          "[resourceId('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]"
+        ],
+        "properties": {
+          "ipConfigurations": [
+            {
+              "name": "ipconfig1",
+              "properties": {
+                "subnet": {
+                  "id": "[variables('subnetRef')]"
+                },
+                "privateIPAllocationMethod": "Dynamic",
+                "publicIpAddress": {
+                  "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
+                }
+              }
+            }
+          ],
+          "networkSecurityGroup": {
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups',variables('networkSecurityGroupName'))]"
+          }
+        }
+      },
+      {
+        "type": "Microsoft.Network/virtualNetworks",
+        "apiVersion": "2020-05-01",
+        "name": "[variables('virtualNetworkName')]",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]"
+        ],
+        "properties": {
+          "addressSpace": {
+            "addressPrefixes": [
+              "[variables('addressPrefix')]"
+            ]
+          },
+          "subnets": [
+            {
+              "name": "[variables('subnetName')]",
+              "properties": {
+                "addressPrefix": "[variables('subnetAddressPrefix')]",
+                "privateEndpointNetworkPolicies": "Enabled",
+                "privateLinkServiceNetworkPolicies": "Enabled",
+                "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "Microsoft.Network/publicIpAddresses",
+        "apiVersion": "2020-06-01",
+        "name": "[variables('publicIpAddressName')]",
+        "location": "[resourceGroup().location]",
+        "sku": {
+          "name": "Basic",
+          "tier": "Regional"
+        },
+        "properties": {
+          "publicIpAllocationMethod": "Dynamic",
+          "publicIPAddressVersion": "IPv4",
+          "dnsSettings": {
+            "domainNameLabel": "[variables('linuxDNSNameForPublicIP')]"
+          },
+          "idleTimeoutInMinutes": 4
+        }
+      },
+      {
+        "type": "Microsoft.Compute/virtualMachines",
+        "apiVersion": "2020-06-01",
+        "name": "[variables('linuxServerName')]",
+        "location": "[resourceGroup().location]",
+        "dependsOn": [
+          "[resourceId('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]"
+        ],
+        "properties": {
+          "hardwareProfile": {
+            "vmSize": "Standard_B2s"
+          },
+          "storageProfile": {
+            "osDisk": {
+              "createOption": "fromImage",
+              "managedDisk": {
+                "storageAccountType": "[variables('osDiskType')]"
+              }
+            },
+            "imageReference": {
+              "publisher": "Canonical",
+              "offer": "UbuntuServer",
+              "sku": "18.04-LTS",
+              "version": "latest"
+            }
+          },
+          "networkProfile": {
+            "networkInterfaces": [
+              {
+                "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+              }
+            ]
+          },
+          "osProfile": {
+            "computerName": "[variables('linuxServerName')]",
+            "adminUsername": "[variables('adminUsername')]",
+            "adminPassword": "[parameters('adminPasswordOrKey')]",
+            "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+          }
+        }
+      },
+      {
+              "type": "Microsoft.Compute/virtualMachines/extensions",
+              "name": "[concat(variables('linuxServerName'),'/installcustomscript')]",
+              "apiVersion": "2020-06-01",
+              "location": "[resourceGroup().location]",         
+              "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('linuxServerName'))]"
+              ],
+              "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                  "fileUris": ["https://raw.githubusercontent.com/Kendubu1/samples/main/apache2/apache2.sh"],
+                  "commandToExecute": "[concat('sudo sh apache2.sh ',variables('adminUsername'))]"
+                }
+              }
+      }
+    ],
+    "outputs": {
+      "adminUsername": {
+        "type": "string",
+        "value": "[variables('adminUsername')]"
+      },
+      "hostname": {
+        "type": "string",
+        "value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
+      },
+      "sshCommand": {
+        "type": "string",
+        "value": "[concat('ssh ', variables('adminUsername'), '@', reference(variables('publicIPAddressName')).dnsSettings.fqdn)]"
+      }
+    }
+  }
