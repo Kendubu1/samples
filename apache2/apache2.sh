@@ -12,18 +12,14 @@ sudo systemctl enable apache2
 
 sudo systemctl start apache2
 
-#Enable Apache"
-#sudo systemctl enable apache2
-#sudo systemctl start apache2
-
 #Adjust Firewall"
 sudo ufw allow in "Apache Full"
 
 #Update permissions & install app
-sudo cd /var/www/
+cd /var/www/
 sudo rm -rf html/
 sudo mkdir html
-sudo cd html 
+cd html 
 sudo git clone https://github.com/Kendubu1/commtest.git .
 sudo chmod -R 0755 /var/www/html/
 
@@ -31,7 +27,8 @@ sleep 15
 
 # Install MySQL & DB
 sudo apt install mysql-server -y
-sudo mysql ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password'; FLUSH PRIVILEGES;
+sudo mysql ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';
+sudo mysql FLUSH PRIVILEGES;
 sudo mysql -uroot -ppassword -e "CREATE DATABASE authors;"
 wget -O /opt/authors.sql https://raw.githubusercontent.com/Kendubu1/samples/main/apache2/authors.sql
 sudo mysql -uroot -ppassword authors < /opt/authors.sql
