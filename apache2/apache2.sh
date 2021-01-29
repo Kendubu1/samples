@@ -1,5 +1,9 @@
 #!/bin/bash
 
+exec 3>&1 4>&2
+trap 'exec 2>&4 1>&3' 0 1 2 3
+exec 1>scriptlog.out 2>&1
+
 # Install Apache and PHP
 sudo apt-get update
 
@@ -63,4 +67,4 @@ sudo sed -i "s/ThreadsPerChild.*/ThreadsPerChild 1/" /etc/apache2/mods-available
 sudo sed -i "s/MaxRequestWorkers.*/MaxRequestWorkers 1/" /etc/apache2/mods-available/mpm_worker.conf
 sudo sed -i "s/MaxConnectionsPerChild.*/MaxConnectionsPerChild 1/" /etc/apache2/mods-available/mpm_worker.conf
 
-sudo systemctl restart apache2
+sudo systemctl restart apache2 &> /dev/null
