@@ -1,18 +1,16 @@
-#!bin/sh
+#!/bin/bash
 
-#Startlogging"
-# exec 3>&1 4>&2
-# trap 'exec 2>&4 1>&3' 0 1 2 3
-# exec 1>scriptlog.out 2>&1
-
-#Install Apache"
+# Install Apache and PHP
 sudo apt-get update
 
 sleep 15
 
-sudo apt-get install apache2 -y
+sudo apt-get -y install apache2
 
-sleep 15
+# Enable Apache and start it
+sudo systemctl enable apache2
+
+sudo systemctl start apache2
 
 #Enable Apache"
 #sudo systemctl enable apache2
@@ -22,9 +20,10 @@ sleep 15
 sudo ufw allow in "Apache Full"
 
 #Update permissions & install app
-sudo rm -rf /var/www/html/
-sudo mkdir /var/www/html/
-sudo cd /var/www/html/ 
+sudo cd /var/www/
+sudo rm -rf html/
+sudo mkdir html
+sudo cd html 
 sudo git clone https://github.com/Kendubu1/commtest.git .
 sudo chmod -R 0755 /var/www/html/
 
@@ -43,11 +42,14 @@ sleep 15
 sudo apt install php libapache2-mod-php php-mysql -y
 sudo sed -i "s/DirectoryIndex.*/DirectoryIndex index.php index.html/" /etc/apache2/mods-enabled/dir.conf
 
+sleep 15
+
 #Update Update/disable Prefork
 sudo a2dismod php7.2
 sudo a2dismod mpm_prefork
 sudo a2dismod mpm_worker
-sudo a2enmod php7.2
+
+sleep 15
 
 #note:have sed skip first occurrance 
 sudo sed -i "s/StartServers.*/StartServers 1/" /etc/apache2/mods-available/mpm_prefork.conf 
