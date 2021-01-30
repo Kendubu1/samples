@@ -53,7 +53,16 @@
               "branch": "[variables('branch')]",
               "IsManualIntegration": true
             }
+          },
+          {
+            "name": "appsettings",
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2020-09-01",
+            "properties": {
+              "SCM_DO_BUILD_DURING_DEPLOYMENT": "True"
+            }
           }
+
         ]
       }
     ]
