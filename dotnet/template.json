@@ -6,7 +6,7 @@
       "siteName": "[concat(toLower(variables('hostingPlanName')), uniqueString(resourceGroup().id))]",
       "sku": "S1",
       "repoURL": "https://github.com/azureossd/dotnetcore-linux-2.git",
-      "branch": "master",
+      "branch": "main",
       "siteConfig": {
         "linuxFxVersion": "DOTNETCORE|3.1"
       }
