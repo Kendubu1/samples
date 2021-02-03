@@ -50,8 +50,7 @@
             ],
             "properties": {
               "repoUrl": "[variables('repoURL')]",
-              "branch": "[variables('branch')]",
-              "IsManualIntegration": true
+              "branch": "[variables('branch')]"
             }
           },
           {
@@ -62,7 +61,8 @@
               "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
             ],
             "properties": {
-              "SCM_DO_BUILD_DURING_DEPLOYMENT": "true"
+              "SCM_DO_BUILD_DURING_DEPLOYMENT": "true",
+              "ENABLE_ORYX_BUILD": "true"
             }
           }
         ]
