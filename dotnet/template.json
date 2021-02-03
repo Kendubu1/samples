@@ -61,8 +61,8 @@
               "[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
             ],
             "properties": {
-              "SCM_DO_BUILD_DURING_DEPLOYMENT": "true",
-              "ENABLE_ORYX_BUILD": "true"
+              "SCM_DO_BUILD_DURING_DEPLOYMENT": "false",
+              "ENABLE_ORYX_BUILD": "false"
             }
           }
         ]
